@@ -1,20 +1,21 @@
-import json
+
 from datetime import datetime
+import re
 
 
 class BaseDriver:
-    def __init__(self, driver_id, last_name=None, first_name=None, sur_name=None, phone_number= None, birthday=None):
+    def __init__(self, driver_id, last_name, first_name,  sur_name, phone_number, birthday):
         # if isinstance(driver_id, str):
         #     self.initialize_from_string(driver_id)
         # elif isinstance(driver_id, dict):
         #     self.initialize_from_json(driver_id)
         # else:
         self.__driver_id = driver_id
-        self.__last_name = last_name
-        self.__first_name = first_name
-        self.__sur_name = sur_name
-        self.__phone_number = phone_number
-        self.__birthday = birthday
+        self.set_last_name(last_name)
+        self.set_first_name(first_name)
+        self.set_sur_name(sur_name)
+        self.set_phone_number(phone_number)
+        self.set_birthday(birthday)
 
     # def initialize_from_string(self, data_str: str):
     #     data = data_str.split(',')
@@ -36,27 +37,30 @@ class BaseDriver:
     #     self.set_sur_name(json_data.get('sur_name'))
     #     self.set_phone_number(json_data.get('phone_number'))
 
+    @staticmethod
+    def validate_string(value: str):
+        if not isinstance(value, str) or len(value.strip()) == 0:
+            return False
+        return True
+
     # @staticmethod
-    # def validate_string(value: str, field_name: str) -> bool:
-    #     if not isinstance(value, str) or len(value.strip()) == 0:
-    #         raise ValueError(f"{field_name} must be a non-empty string")
-    #     return True
-    #
-    # @staticmethod
-    # def validate_driver_id(driver_id: int) -> bool:
+    # def validate_driver_id(driver_id: int):
     #     if not isinstance(driver_id, int) or driver_id <= 0:
-    #         raise ValueError("Driver ID must be a positive integer")
-    #     return True
-    #
-    # @staticmethod
-    # def validate_phone_number(phone_number: int) -> bool:
-    #     if not isinstance(phone_number, int) or phone_number < 0:
-    #         raise ValueError("phone_number must be a non-negative integer")
+    #         return False
     #     return True
 
+    @staticmethod
+    def validate_phone_number(phone):
+        return isinstance(phone, str) and re.fullmatch(r'((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}', phone)
+
+    @staticmethod
+    def validate_birthday(birthday) -> bool:
+        return isinstance(birthday, datetime)
+
+
     # Getters
-    def get_driver_id(self):
-        return self.__driver_id
+    # def get_driver_id(self):
+    #     return self.__driver_id
 
     def get_last_name(self):
         return self.__last_name
@@ -74,28 +78,33 @@ class BaseDriver:
         return self.__birthday
 
     # Setters с валидацией
-    def set_driver_id(self, driver_id: int):
-        # self.validate_driver_id(driver_id)
-        self.__driver_id = driver_id
+    # def set_driver_id(self, driver_id: int):
+    #     # self.validate_driver_id(driver_id)
+    #     self.__driver_id = driver_id
 
     def set_last_name(self, last_name: str):
-        # self.validate_string(last_name, "Last name")
-        self.__last_name = last_name
+        if not self.validate_string(last_name):
+            raise ValueError(f"{last_name} не должно быть пустым.")
+        self.__last_name : str = last_name
 
     def set_first_name(self, first_name: str):
-        # self.validate_string(first_name, "First name")
+        if not self.validate_string(first_name):
+            raise ValueError(f"{first_name} не должно быть пустым.")
         self.__first_name = first_name
 
     def set_sur_name(self, sur_name: str):
-        # self.validate_string(sur_name, "sur_name")
+        if not self.validate_string(sur_name):
+            raise ValueError(f"{sur_name} не должно быть пустым.")
         self.__sur_name = sur_name
 
-    def set_phone_number(self, phone_number: int):
-        # self.validate_birthday(birthday)
+    def set_phone_number(self, phone_number):
+        if not self.validate_phone_number(phone_number):
+            raise ValueError("Номер телефона введен неверно.")
         self.__phone_number = phone_number
 
-    def set_birthday(self, birthday: datetime):
-        # self.validate_birthday(birthday)
+    def set_birthday(self, birthday):
+        if self.validate_birthday(birthday):
+            raise ValueError("Дата рождения не может быть пустой.")
         self.__birthday = birthday
 
     # def __repr__(self):
@@ -134,7 +143,7 @@ class BaseDriver:
 #
 #
 # # Пример использования
-# driver = BaseDriver(1, "Ivanov", "Ivan", "Ivanovich", 5)
+# driver = BaseDriver(1, "Ivanov", "Ivan", "Ivanovich", "8999999999", "10-03-00")
 # summary = BaseDriver(driver, inn="123456789012", ogrn="1234567891234")
 #
 # # Вывод полной информации
