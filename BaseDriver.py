@@ -1,41 +1,16 @@
-
+import json
 from datetime import datetime
 import re
 
 
 class BaseDriver:
     def __init__(self, driver_id, last_name, first_name,  sur_name, phone_number, birthday):
-        # if isinstance(driver_id, str):
-        #     self.initialize_from_string(driver_id)
-        # elif isinstance(driver_id, dict):
-        #     self.initialize_from_json(driver_id)
-        # else:
         self.__driver_id = driver_id
         self.set_last_name(last_name)
         self.set_first_name(first_name)
         self.set_sur_name(sur_name)
         self.set_phone_number(phone_number)
         self.set_birthday(birthday)
-
-    # def initialize_from_string(self, data_str: str):
-    #     data = data_str.split(',')
-    #     if len(data) != 5:
-    #         raise ValueError(
-    #             "String must contain exactly 5 values: driver_id,last_name,first_name,sur_name,phone_number")
-    #
-    #     driver_id, last_name, first_name, sur_name, phone_number = data
-    #     self.set_driver_id(int(driver_id))
-    #     self.set_last_name(last_name.strip())
-    #     self.set_first_name(first_name.strip())
-    #     self.set_sur_name(sur_name.strip())
-    #     self.set_phone_number(int(phone_number))
-
-    # def initialize_from_json(self, json_data: dict):
-    #     self.set_driver_id(json_data.get('driver_id'))
-    #     self.set_last_name(json_data.get('last_name'))
-    #     self.set_first_name(json_data.get('first_name'))
-    #     self.set_sur_name(json_data.get('sur_name'))
-    #     self.set_phone_number(json_data.get('phone_number'))
 
     @staticmethod
     def validate_string(value: str):
@@ -57,6 +32,22 @@ class BaseDriver:
     def validate_birthday(birthday) -> bool:
         return isinstance(birthday, datetime)
 
+    # Классовый метод создания клиента из JSON
+    @classmethod
+    def from_json(data_json):
+        try:
+            data = json.loads(data_json)
+            birthday = datetime.strptime(data['birthday'].strip(), "%Y-%m-%d").date()
+            return BaseDriver(
+                driver_id=data['driver_id'],
+                last_name=data['last_name'],
+                first_name=data['first_name'],
+                sur_name=data['sur_name'],
+                phone_number=data['phone_number'],
+                birthday=birthday
+            )
+        except Exception as e:
+            raise ValueError("Данные JSON не верны")
 
     # Getters
     # def get_driver_id(self):
@@ -99,7 +90,7 @@ class BaseDriver:
 
     def set_phone_number(self, phone_number):
         if not self.validate_phone_number(phone_number):
-            raise ValueError("Номер телефона введен неверно.")
+            raise ValueError("Номер телефона введен неверно(поле не может быть пустым).")
         self.__phone_number = phone_number
 
     def set_birthday(self, birthday):
@@ -114,17 +105,28 @@ class BaseDriver:
 
     def __str__(self):
         return (f"Driver ID: {self.__driver_id}, Name: {self.__last_name} {self.__first_name} {self.__sur_name}, "
-                f"phone_number: {self.__phone_number} ," f"birthday: {self.__birthday} ")
+                f"phone_number: {self.__phone_number} ,birthday: {self.__birthday} ")
 
-    # def __eq__(self, other):
-    #     if not isinstance(other, BaseDriver):
-    #         return NotImplemented
-    #     return (self.__driver_id == other.__driver_id and
-    #             self.__last_name == other.__last_name and
-    #             self.__first_name == other.__first_name and
-    #             self.__sur_name == other.__sur_name and
-    #             self.__phone_number == other.__phone_number)
+    @property
+    def short_version(self):
+        return f"Driver({self.get_first_name()} {self.get_last_name()})"
 
+    # Представление для полной версии объекта
+    @property
+    def full_version(self):
+        return (f"Driver(Driver:{self.get_first_name()} {self.get_last_name()} {self.get_sur_name()}, "
+                f"birthday={self.get_birthday()}, "
+                f"phone_number={self.get_phone_number()})")
+
+    # Сравнение объектов на равенство
+    def __eq__(self, other):
+        if isinstance(other, BaseDriver):
+            return (self.get_first_name() == other.get_first_name() and
+                    self.get_last_name() == other.get_last_name()and
+                    self.get_sur_name() == other.get_sur_name()and
+                    self.get_phone_number() == other.get_phone_number()and
+                    self.get_birthday() == other.get_birthday())
+        return False
 
 # class BaseDriver(BaseDriver):
 #     def __init__(self, driver: BaseDriver, inn: str, ogrn: str):
@@ -143,7 +145,13 @@ class BaseDriver:
 #
 #
 # # Пример использования
-# driver = BaseDriver(1, "Ivanov", "Ivan", "Ivanovich", "8999999999", "10-03-00")
+# driver = BaseDriver(1, "Ivanov", "Ivan", "Ivanovich", "8999999998", "10-03-00")
+# driver2 = BaseDriver(1, "Ivanov", "Ivan", "Ivanovich", "8999999999", "10-03-00")
+# print(driver)
+# print(driver.full_version)
+# print(driver.short_version)
+# print(driver == driver2)
+
 # summary = BaseDriver(driver, inn="123456789012", ogrn="1234567891234")
 #
 # # Вывод полной информации
