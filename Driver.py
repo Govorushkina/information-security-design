@@ -6,25 +6,22 @@ from BaseDriver import BaseDriver
 
 
 class Driver(BaseDriver):
-    def __init__(self, last_name, first_name, sur_name, phone_number, birthday, experience, insurance_policy,
-                 driver_license, vehicle_passport, driver_id=None):
-        super().__init__(last_name, first_name, sur_name, phone_number, birthday, driver_id)
+    def __init__(self, last_name, first_name, sur_name, phone_number,driver_license, experience, insurance_policy,
+                 vehicle_passport, driver_id=None):
+        super().__init__(last_name, first_name, sur_name, phone_number, driver_license, driver_id)
         self.set_experience(experience)
         self.set_insurance_policy(insurance_policy)
-        self.set_driver_license(driver_license)
         self.set_vehicle_passport(vehicle_passport)
 
     @classmethod
     def from_json(cls, data_json):
         try:
             data = json.loads(data_json)
-            birthday = datetime.strptime(data['birthday'].strip(), "%Y-%m-%d").date()
             return cls(
                 last_name=data['last_name'],
                 first_name=data['first_name'],
                 sur_name=data['sur_name'],
                 phone_number=data['phone_number'],
-                birthday=birthday,
                 experience=data['experience'],
                 insurance_policy=data['insurance_policy'],
                 driver_license=data['driver_license'],
@@ -38,9 +35,6 @@ class Driver(BaseDriver):
 
     def get_insurance_policy(self):
         return self.__insurance_policy
-
-    def get_driver_license(self):
-        return self.__driver_license
 
     def get_vehicle_passport(self):
         return self.__vehicle_passport
@@ -60,16 +54,10 @@ class Driver(BaseDriver):
             raise ValueError("Стаж не может быть отрицательным значением.")
         self.__experience = experience
 
-
     def set_insurance_policy(self, insurance_policy: int):
         if not self.validate_document(insurance_policy, 10):
             raise ValueError("Неверно введены данные")
         self.__insurance_policy = insurance_policy
-
-    def set_driver_license(self, driver_license: int):
-        if not self.validate_document(driver_license, 6):
-            raise ValueError("Неверно введены данные")
-        self.__driver_license = driver_license
 
     def set_vehicle_passport(self, vehicle_passport: int):
         if not self.validate_document(vehicle_passport, 15):
@@ -79,7 +67,3 @@ class Driver(BaseDriver):
     def short_description(self):
         return self.get_last_name(), self.get_phone_number()
 
-
-# Пример использования
-summary = Driver("Ivanov", "Ivan", "Ivanovich", "89999999999", "2000-03-10", 3, 3333558756, 546956, 225555555555552)
-print(summary.short_description)
